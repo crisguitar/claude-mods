@@ -1,0 +1,11 @@
+{
+  "name": "claude-mods",
+  "owner": { "name": "Cris Pinto" },
+  "plugins": [
+    {
+      "name": "myusage",
+      "source": "./mods/myusage",
+      "description": "Context and rate-limit usage bars above the prompt"
+    }
+  ]
+}
