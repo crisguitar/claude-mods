@@ -201,7 +201,7 @@ export const act = (p: Pet, action: Action, now: number, rng: Rng = Math.random)
 
 export const rename = (p: Pet, name: string): Pet => ({ ...p, name: name.slice(0, 16) || p.name, msg: `Name set to ${name.slice(0, 16)}.` })
 
-export const hearts = (n: number) => '♥'.repeat(n) + '♡'.repeat(MAX - n)
+export const hearts = (n: number) => [...'♥'.repeat(n), ...'♡'.repeat(MAX - n)].join(' ')
 
 export const callText = (p: Pet): string | null => {
   const k = p.call?.kind

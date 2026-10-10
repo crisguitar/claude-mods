@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'claude-code/testing'
 
+import type { Pet } from '../types'
 import { act, advance, hatch } from './game'
 
 const MIN = 60_000
@@ -8,7 +9,7 @@ const noon = new Date(2026, 2, 2, 12, 0, 0).getTime()
 const never = () => 0.999
 const always = () => 0
 
-const child = (now = noon) => ({ ...hatch(now, 'Momo'), stage: 'child' as const, stageAt: now })
+const child = (now = noon): Pet => ({ ...hatch(now, 'Momo'), stage: 'child' as const, stageAt: now })
 
 describe('life', () => {
   test('an egg hatches after a few minutes', async () => {

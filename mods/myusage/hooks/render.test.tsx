@@ -14,13 +14,18 @@ test('the card validates and draws on the terminal', async ($, on) => {
     }) as never,
   )
   on('session.start', ($, e) => ({ cwd: e.cwd }))
-  on('ui.render', { component: 'AbovePrompt' }, () => null as never)
+  // another mod's band sits below ours in the chain
+  on('ui.render', { component: 'AbovePrompt' }, ($, e) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>other mod</Text>
+  })
   await $.session.start({ cwd: '/w', surface: null, isInteractive: true } as never)
   const ui = await $.ui.mount({
     plugin: 'myusage', surface: 'terminal', component: 'AbovePrompt',
     props: { hasSurvey: false, isWorking: true, maxRows: 20, bodyColumns: 120, scroll: { offset: 0, bodyRows: 19 }, view: {} },
   } as never)
   expect(await ui.find({ type: 'Text', text: /ctx/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /other mod/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /usage/ })).toBeDefined()
   await ui.unmount()
 })

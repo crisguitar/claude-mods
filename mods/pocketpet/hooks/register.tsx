@@ -117,6 +117,8 @@ export const register: Register = on => {
     if (e.props.hasSurvey) return next(e)
     const v = await read($, view)
     if (!v.pet) return next(e)
+    // other mods hook this band too: draw what sits below, then our card
+    const below = await next(e)
     const { Box, Text, Button } = $.ui.resolve(e)
     const p = v.pet
     const now = await $.clock.now()
@@ -130,10 +132,13 @@ export const register: Register = on => {
 
     if (!v.isOpen) {
       return (
-        <Box paddingRight={1}>
-          <Box borderStyle="round" borderColor="subtle" paddingX={1} gap={1}>
-            <Text dimColor>{p.name}{p.call ? ' !' : ''}</Text>
-            <Button key="show" onPress={set({ isOpen: true })}>Show</Button>
+        <Box flexDirection="column">
+          {below}
+          <Box paddingRight={1}>
+            <Box borderStyle="round" borderColor="subtle" paddingX={1} gap={1}>
+              <Text dimColor>{p.name}{p.call ? ' !' : ''}</Text>
+              <Button key="show" onPress={set({ isOpen: true })}>Show</Button>
+            </Box>
           </Box>
         </Box>
       )
@@ -163,6 +168,8 @@ export const register: Register = on => {
           ]
 
     return (
+      <Box flexDirection="column">
+        {below}
       <Box paddingRight={1}>
         <Box flexDirection="column" borderStyle="round" borderColor={dead ? 'subtle' : call ? 'warning' : 'claude'} paddingX={1}>
           <Box justifyContent="space-between">
@@ -180,7 +187,7 @@ export const register: Register = on => {
             <Box flexDirection="column">
               <Text>
                 <Text dimColor>hunger </Text><Text color={level(p.hunger)}>{hearts(p.hunger)}</Text>
-                <Text dimColor>  happy </Text><Text color={level(p.happy)}>{hearts(p.happy)}</Text>
+                <Text dimColor>   happy </Text><Text color={level(p.happy)}>{hearts(p.happy)}</Text>
                 {p.poop > 0 ? <Text color="warning">{`  poop ${'●'.repeat(p.poop)}`}</Text> : null}
                 {p.isSick ? <Text color="error" bold>  sick</Text> : null}
               </Text>
@@ -191,6 +198,7 @@ export const register: Register = on => {
           </Box>
           <Box gap={1} flexWrap="wrap">{buttons}</Box>
         </Box>
+      </Box>
       </Box>
     )
   })

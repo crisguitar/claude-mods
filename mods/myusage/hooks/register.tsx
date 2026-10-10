@@ -83,6 +83,8 @@ export const register: Register = on => {
       return next(e)
     }
 
+    // other mods hook this band too: draw what sits below, then our card
+    const below = await next(e)
     const { Box, Text } = $.ui.resolve(e)
     const now = await $.clock.now()
     const isWorking = e.props.isWorking
@@ -114,10 +116,13 @@ export const register: Register = on => {
     ]
 
     return (
-      <Box paddingRight={1}>
-        <Box flexDirection="column" borderStyle="round" borderColor="claude" paddingX={1}>
-          <Text wrap="truncate-end">{head}</Text>
-          {u.fiveHour || u.week ? <Text wrap="truncate-end">{limits}</Text> : null}
+      <Box flexDirection="column">
+        {below}
+        <Box paddingRight={1}>
+          <Box flexDirection="column" borderStyle="round" borderColor="claude" paddingX={1}>
+            <Text wrap="truncate-end">{head}</Text>
+            {u.fiveHour || u.week ? <Text wrap="truncate-end">{limits}</Text> : null}
+          </Box>
         </Box>
       </Box>
     )
