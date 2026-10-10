@@ -14,7 +14,7 @@ A collection of personal Claude Code mods. Each mod lives in `mods/<name>/` and 
 | Mod | Description |
 |-----|-------------|
 | [myusage](mods/myusage) | Context and rate-limit usage bars above the prompt |
-| [pocketpet](mods/pocketpet) | Tamagotchi-style virtual pet above the prompt, driven by buttons or `/pet` |
+| [pocketpet](mods/pocketpet) | Tamagotchi-style virtual pet (cat, dog, octopus, crab or dragon) above the prompt, driven by buttons or `/pet` |
 
 ## Adding a new mod
 

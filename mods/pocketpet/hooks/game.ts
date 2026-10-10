@@ -1,4 +1,4 @@
-import type { Pet, Stage } from '../types'
+import type { Pet, Species, Stage } from '../types'
 
 export const MAX = 4
 const MIN = 60_000
@@ -28,8 +28,10 @@ export const isBedtime = (ms: number) => {
   return h >= 22 || h < 7
 }
 
-export const hatch = (now: number, name = 'Pet'): Pet => ({
-  name, stage: 'egg', kind: 'good', bornAt: now, stageAt: now, lastAt: now,
+export const SPECIES: Species[] = ['cat', 'dog', 'octopus', 'crab', 'dragon']
+
+export const hatch = (now: number, name = 'Pet', species?: Species, rng: Rng = Math.random): Pet => ({
+  name, species: species ?? SPECIES[Math.floor(rng() * SPECIES.length)]!, stage: 'egg', kind: 'good', bornAt: now, stageAt: now, lastAt: now,
   hunger: MAX, happy: MAX, weight: 5, discipline: 0, mistakes: 0, poop: 0,
   isSick: false, sickSince: 0, doses: 0, isLightsOff: false, call: null, game: null,
   starveMin: 0, sadMin: 0, litMin: 0, hungerAcc: 0, happyAcc: 0, poopAcc: 0,
@@ -210,7 +212,7 @@ export const callText = (p: Pet): string | null => {
 
 export const statusText = (p: Pet, now: number) =>
   [
-    `${p.name} — ${p.stage}${p.stage === 'dead' ? ` (${p.cause})` : ''}, age ${ageDays(p, now)}d`,
+    `${p.name} — ${p.stage === 'egg' ? 'egg' : `${p.species} ${p.stage}`}${p.stage === 'dead' ? ` (${p.cause})` : ''}, age ${ageDays(p, now)}d`,
     `hunger ${hearts(p.hunger)}  happy ${hearts(p.happy)}  weight ${p.weight}`,
     `discipline ${p.discipline}%  care mistakes ${p.mistakes}  poop ${p.poop}${p.isSick ? '  SICK' : ''}`,
   ].join('\n')

@@ -1,8 +1,8 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface as Engine, Register } from 'claude-code'
 
-import type { Pet, View } from '../types'
-import { act, advance, ageDays, callText, hatch, hearts, isAsleep, rename, statusText } from './game'
+import type { Pet, Species, View } from '../types'
+import { SPECIES, act, advance, ageDays, callText, hatch, hearts, isAsleep, rename, statusText } from './game'
 import type { Action } from './game'
 import { sprite } from './sprites'
 
@@ -28,7 +28,7 @@ const ALIASES: Record<string, Action> = {
 const HELP = [
   '/pet                show status',
   '/pet feed | snack | play | left | right | medicine | clean | light | scold',
-  '/pet status | name <n> | show | hide | new',
+  '/pet status | name <n> | show | hide | new [cat|dog|octopus|crab|dragon]',
 ].join('\n')
 
 const save = async ($: Engine, pet: Pet) => {
@@ -53,7 +53,7 @@ export const register: Register = on => {
     await $.command.register({ name: 'pet', description: 'Care for your pocket pet', argumentHint: '[feed|snack|play|medicine|clean|light|scold|status|name|new|hide|show]' })
     const now = await $.clock.now()
     const stored = (await $.store.get('pet')) as Pet | undefined
-    const pet = stored ? advance(stored, now) : hatch(now)
+    const pet = stored ? advance({ ...stored, species: stored.species ?? 'cat' }, now) : hatch(now)
     await update($, view, v => ({ ...v, pet }))
     await save($, pet)
 
@@ -90,8 +90,9 @@ export const register: Register = on => {
     }
     if (cmd === 'new') {
       const cur = (await read($, view)).pet
-      if (cur && cur.stage !== 'dead' && rest[0] !== 'force') return { text: `${cur.name} is still alive. Use "/pet new force" to start over anyway.` }
-      const pet = hatch(now, cur?.name)
+      if (cur && cur.stage !== 'dead' && !rest.includes('force')) return { text: `${cur.name} is still alive. Use "/pet new force" (optionally with cat|dog|octopus|crab|dragon) to start over anyway.` }
+      const want = rest.find(w => (SPECIES as string[]).includes(w.toLowerCase()))?.toLowerCase() as Species | undefined
+      const pet = hatch(now, cur?.name, want)
       await update($, view, v => ({ ...v, pet }))
       await save($, pet)
       return { text: pet.msg }
@@ -175,7 +176,7 @@ export const register: Register = on => {
           <Box justifyContent="space-between">
             <Text wrap="truncate-end">
               <Text color="claude" bold>{p.name}</Text>
-              <Text dimColor>{` · ${p.stage} · ${ageDays(p, now)}d`}</Text>
+              <Text dimColor>{` · ${p.stage === 'egg' ? 'egg' : `${p.species} ${p.stage}`} · ${ageDays(p, now)}d`}</Text>
               {asleep && !dead && p.stage !== 'egg' ? <Text dimColor> · zzz</Text> : null}
             </Text>
             <Button key="hide" plain dimColor onPress={set({ isOpen: false })}>hide</Button>

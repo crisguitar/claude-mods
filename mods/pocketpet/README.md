@@ -12,7 +12,7 @@ A tamagotchi-style pet that lives in a band above the prompt. Click the buttons,
 | Light | `/pet light` | lights off lets it sleep (bedtime 22:00-07:00) |
 | Scold | `/pet scold` | answers a fake attention call, raises discipline |
 | Status | `/pet status` | age, weight, discipline, care mistakes |
-| | `/pet name <n>`, `/pet new`, `/pet hide`, `/pet show` | |
+| | `/pet name <n>`, `/pet new [cat|dog|octopus|crab|dragon]`, `/pet hide`, `/pet show` | New egg (random species unless named) |
 
 Life runs in real time and is saved between sessions: egg (3 min), baby (1 h), child (12 h), teen (2 d), adult (7 d), senior; max age 14 days. Ignored calls count as care mistakes and decide how it grows up. Starvation, loneliness, untreated sickness and old age end it. After the session has been closed, at most 5 hours of time are simulated.
 

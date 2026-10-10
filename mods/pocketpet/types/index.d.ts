@@ -2,8 +2,11 @@ export type Stage = 'egg' | 'baby' | 'child' | 'teen' | 'adult' | 'senior' | 'de
 export type Call = { kind: 'hungry' | 'unhappy' | 'sleepy' | 'sick' | 'fake'; since: number; isMarked: boolean }
 export type Game = { round: number; wins: number; last: string }
 
+export type Species = 'cat' | 'dog' | 'octopus' | 'crab' | 'dragon'
+
 export type Pet = {
   name: string
+  species: Species
   stage: Stage
   /** care quality at the last evolution: 'good' | 'ok' | 'bad' */
   kind: 'good' | 'ok' | 'bad'
