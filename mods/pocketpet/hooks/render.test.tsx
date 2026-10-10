@@ -22,6 +22,9 @@ test('the pet card draws buttons and a button feeds the pet', async ($, on) => {
   on('session.start', ($, e) => ({ cwd: e.cwd }))
   await $.session.start({ cwd: '/w', surface: null, isInteractive: true } as never)
   const ui = await $.ui.mount({ plugin: 'pocketpet', surface: 'terminal', ...BAND } as never)
+  // hidden by default: only the small chip shows until the person opens it
+  expect(await ui.find({ key: 'feed' })).toBeUndefined()
+  await ui.press({ key: 'show' })
   expect(await ui.find({ type: 'Text', text: /Momo/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /other mod/ })).toBeDefined()
   expect(await ui.find({ key: 'feed' })).toBeDefined()

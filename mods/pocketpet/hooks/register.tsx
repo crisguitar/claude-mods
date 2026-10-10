@@ -8,7 +8,7 @@ import { sprite } from './sprites'
 
 const view = atom(
   { plugin: 'pocketpet', key: 'view' } as const,
-  { pet: null, frame: 0, isOpen: true, isStats: false } as View,
+  { pet: null, frame: 0, isOpen: false, isStats: false } as View,
 )
 
 const TICK = 1500
