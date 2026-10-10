@@ -5,7 +5,7 @@ A collection of personal Claude Code mods. Each mod lives in `mods/<name>/` and 
 ## Install on another machine
 
 ```
-/plugin marketplace add <github-user>/claude-mods
+/plugin marketplace add crisguitar/claude-mods
 /plugin install <mod-name>@claude-mods
 ```
 
