@@ -5,6 +5,8 @@ export type Game = { round: number; wins: number; last: string }
 export type Species = 'cat' | 'dog' | 'octopus' | 'crab' | 'dragon'
 
 export type Pet = {
+  /** bumped on every save; the newest copy wins when sessions share the pet */
+  rev: number
   name: string
   species: Species
   stage: Stage

@@ -31,7 +31,7 @@ export const isBedtime = (ms: number) => {
 export const SPECIES: Species[] = ['cat', 'dog', 'octopus', 'crab', 'dragon']
 
 export const hatch = (now: number, name = 'Pet', species?: Species, rng: Rng = Math.random): Pet => ({
-  name, species: species ?? SPECIES[Math.floor(rng() * SPECIES.length)]!, stage: 'egg', kind: 'good', bornAt: now, stageAt: now, lastAt: now,
+  rev: 0, name, species: species ?? SPECIES[Math.floor(rng() * SPECIES.length)]!, stage: 'egg', kind: 'good', bornAt: now, stageAt: now, lastAt: now,
   hunger: MAX, happy: MAX, weight: 5, discipline: 0, mistakes: 0, poop: 0,
   isSick: false, sickSince: 0, doses: 0, isLightsOff: false, call: null, game: null,
   starveMin: 0, sadMin: 0, litMin: 0, hungerAcc: 0, happyAcc: 0, poopAcc: 0,

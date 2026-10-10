@@ -17,3 +17,7 @@ A tamagotchi-style pet that lives in a band above the prompt. Click the buttons,
 Life runs in real time and is saved between sessions: egg (3 min), baby (1 h), child (12 h), teen (2 d), adult (7 d), senior; max age 14 days. Ignored calls count as care mistakes and decide how it grows up. Starvation, loneliness, untreated sickness and old age end it. After the session has been closed, at most 5 hours of time are simulated.
 
 Button hotkeys (when the band has focus): f s p m c o d t.
+
+## Several terminals
+
+All sessions share one saved pet. Every save bumps a revision number, and each session adopts the saved copy whenever it is newer than its own (checked every tick and before every action), so feeding in one terminal shows up in the others within a couple of seconds.

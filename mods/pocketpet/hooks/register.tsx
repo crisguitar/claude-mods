@@ -31,48 +31,49 @@ const HELP = [
   '/pet status | name <n> | show | hide | new [cat|dog|octopus|crab|dragon]',
 ].join('\n')
 
-const save = async ($: Engine, pet: Pet) => {
-  await $.store.set('pet', pet as never)
+/** Every write bumps `rev`, so a session can tell whose copy of the pet is newer. */
+const stamp = (p: Pet): Pet => ({ ...p, rev: (p.rev ?? 0) + 1 })
+
+/** Other sessions share one saved pet: take theirs when it is newer than ours. */
+const newest = async ($: Engine, mem: Pet | null): Promise<Pet | null> => {
+  const saved = (await $.store.get('pet')) as Pet | undefined
+  if (saved && (!mem || (saved.rev ?? 0) >= (mem.rev ?? 0))) return { ...saved, species: saved.species ?? 'cat' }
+  return mem
 }
 
-/** Apply `fn` to the pet, advanced to now; returns the new pet. */
+/** Stamp, save and show `pet`; returns the stamped copy. */
+const commit = async ($: Engine, pet: Pet): Promise<Pet> => {
+  const out = stamp(pet)
+  await $.store.set('pet', out as never)
+  await update($, view, v => ({ ...v, pet: out }))
+  return out
+}
+
+/** Apply `fn` to the newest pet, advanced to now; returns the saved result. */
 const mutate = async ($: Engine, fn: (p: Pet, now: number) => Pet): Promise<Pet | null> => {
   const now = await $.clock.now()
-  let out: Pet | null = null
-  await update($, view, v => {
-    if (!v.pet) return v
-    out = fn(advance(v.pet, now), now)
-    return { ...v, pet: out }
-  })
-  if (out) await save($, out)
-  return out
+  const base = await newest($, (await read($, view)).pet)
+  if (!base) return null
+  return commit($, fn(advance(base, now), now))
 }
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({ name: 'pet', description: 'Care for your pocket pet', argumentHint: '[feed|snack|play|medicine|clean|light|scold|status|name|new|hide|show]' })
     const now = await $.clock.now()
-    const stored = (await $.store.get('pet')) as Pet | undefined
-    const pet = stored ? advance({ ...stored, species: stored.species ?? 'cat' }, now) : hatch(now)
-    await update($, view, v => ({ ...v, pet }))
-    await save($, pet)
+    const stored = await newest($, null)
+    await commit($, stored ? advance(stored, now) : hatch(now))
 
     let ticks = 0
     $.clock.every(TICK, async () => {
       const t = await $.clock.now()
       ticks++
-      let before: Pet | null = null
-      let after: Pet | null = null
-      await update($, view, v => {
-        before = v.pet
-        after = v.pet ? advance(v.pet, t) : null
-        return { ...v, frame: v.frame + 1, pet: after }
-      })
-      const a = after as Pet | null
-      const b = before as Pet | null
-      if (a && b && !b.call && a.call && a.call.kind !== 'fake') await $.ui.toast(`${a.name} ${callText(a)}!`)
-      if (a && b && b.stage !== a.stage) await $.ui.toast(a.msg)
-      if (a && ticks % SAVE_EVERY === 0) await save($, a)
+      const before = await newest($, (await read($, view)).pet)
+      let after = before ? advance(before, t) : null
+      if (after && ticks % SAVE_EVERY === 0) after = await commit($, after)
+      else await update($, view, v => ({ ...v, frame: v.frame + 1, pet: after }))
+      if (after && before && !before.call && after.call && after.call.kind !== 'fake') await $.ui.toast(`${after.name} ${callText(after)}!`)
+      if (after && before && before.stage !== after.stage) await $.ui.toast(after.msg)
     })
 
     return next(e)
@@ -89,12 +90,10 @@ export const register: Register = on => {
       return { text: cmd === 'show' ? 'Pet shown.' : 'Pet hidden. /pet show brings it back.' }
     }
     if (cmd === 'new') {
-      const cur = (await read($, view)).pet
+      const cur = await newest($, (await read($, view)).pet)
       if (cur && cur.stage !== 'dead' && !rest.includes('force')) return { text: `${cur.name} is still alive. Use "/pet new force" (optionally with cat|dog|octopus|crab|dragon) to start over anyway.` }
       const want = rest.find(w => (SPECIES as string[]).includes(w.toLowerCase()))?.toLowerCase() as Species | undefined
-      const pet = hatch(now, cur?.name, want)
-      await update($, view, v => ({ ...v, pet }))
-      await save($, pet)
+      const pet = await commit($, { ...hatch(now, cur?.name, want), rev: cur?.rev ?? 0 })
       return { text: pet.msg }
     }
     if (cmd === 'name') {
