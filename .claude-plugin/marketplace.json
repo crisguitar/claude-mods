@@ -1,11 +1,18 @@
 {
   "name": "claude-mods",
-  "owner": { "name": "Cris Pinto" },
+  "owner": {
+    "name": "Cris Pinto"
+  },
   "plugins": [
     {
       "name": "myusage",
       "source": "./mods/myusage",
       "description": "Context and rate-limit usage bars above the prompt"
+    },
+    {
+      "name": "pocketpet",
+      "source": "./mods/pocketpet",
+      "description": "A tamagotchi-style virtual pet above the prompt: feed, play, clean, medicine, lights, discipline"
     }
   ]
 }
