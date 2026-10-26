@@ -3,16 +3,21 @@ import type { Register, SessionUsage } from 'claude-code'
 
 import type { Limit, Usage } from '../types'
 
+/** Dracula palette */
+const PURPLE = '#bd93f9'
+const ORANGE = '#ffb86c'
+const RED = '#ff5555'
+
 const usage = atom(
   { plugin: 'myusage', key: 'usage' } as const,
-  { model: null, ctxPct: null, costUsd: null, fiveHour: null, week: null } as Usage,
+  { model: null, effort: null, ctxPct: null, costUsd: null, fiveHour: null, week: null } as Usage,
 )
 
 const GAUGE = 8
 const SEP = ' · '
 
 const levelColor = (pct: number, warnAt: number, errAt: number) =>
-  pct >= errAt ? 'error' : pct >= warnAt ? 'warning' : 'claude'
+  pct >= errAt ? RED : pct >= warnAt ? ORANGE : PURPLE
 
 const gauge = (pct: number, width: number) => {
   const on = Math.min(width, Math.max(0, Math.round((pct * width) / 100)))
@@ -66,7 +71,7 @@ export const register: Register = on => {
 
   on('turn.step', async function* ($, e, next) {
     if (!e.agentId) {
-      await update($, usage, u => ({ ...u, model: e.model }))
+      await update($, usage, u => ({ ...u, model: e.model, effort: e.effort === undefined ? u.effort : String(e.effort) }))
     }
 
     return yield* next(e)
@@ -95,14 +100,15 @@ export const register: Register = on => {
         <Text dimColor>{label} </Text>,
         <Text color={color}>{g.on}</Text>,
         <Text color="subtle">{g.off}</Text>,
-        <Text color={color === 'claude' ? undefined : color} bold>{` ${Math.round(limit.pct)}%`}</Text>,
+        <Text color={color === PURPLE ? undefined : color} bold>{` ${Math.round(limit.pct)}%`}</Text>,
         limit.resetsAt ? <Text dimColor>{` (resets in ${formatReset(limit.resetsAt, now)})`}</Text> : null,
       ]
     }
 
     const head = [
-      u.model ? <Text color="claude" bold>{prettyModel(u.model)}</Text> : null,
-      <Text color={isWorking ? 'claude' : undefined} dimColor={!isWorking}>{isWorking ? ' ● working' : ' ○ idle'}</Text>,
+      u.model ? <Text color={PURPLE} bold>{prettyModel(u.model)}</Text> : null,
+      u.effort ? <Text dimColor>{` ${u.effort}`}</Text> : null,
+      <Text color={isWorking ? PURPLE : undefined} dimColor={!isWorking}>{isWorking ? ' ● working' : ' ○ idle'}</Text>,
       u.ctxPct !== null
         ? [<Text dimColor>{SEP}</Text>, meter('ctx', { pct: u.ctxPct }, levelColor(u.ctxPct, 50, 80))]
         : null,
@@ -119,7 +125,7 @@ export const register: Register = on => {
       <Box flexDirection="column">
         {below}
         <Box paddingRight={1}>
-          <Box flexDirection="column" borderStyle="round" borderColor="claude" paddingX={1}>
+          <Box flexDirection="column" borderStyle="round" borderColor={PURPLE} paddingX={1}>
             <Text wrap="truncate-end">{head}</Text>
             {u.fiveHour || u.week ? <Text wrap="truncate-end">{limits}</Text> : null}
           </Box>
