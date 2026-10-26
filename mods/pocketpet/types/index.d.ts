@@ -39,7 +39,10 @@ export type Pet = {
   cause: string
 }
 
-export type View = { pet: Pet | null; frame: number; isOpen: boolean; isStats: boolean }
+/** `at` is the frame of the last click on the pet, `n` counts clicks (picks the reaction) */
+export type Poke = { at: number; n: number }
+
+export type View = { pet: Pet | null; frame: number; isOpen: boolean; isStats: boolean; poke: Poke | null }
 
 declare module 'claude-code' {
   interface PluginState {

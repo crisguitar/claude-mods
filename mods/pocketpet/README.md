@@ -1,6 +1,6 @@
 # pocketpet
 
-A tamagotchi-style pet that lives in a band above the prompt. It starts collapsed to a small chip: click Show (or run `/pet show`) to open it. Click the buttons, or type `/pet <action>`.
+A tamagotchi-style pet that lives in a band above the prompt. It starts open; click hide to collapse it to a small chip, and Show (or `/pet show`) to bring it back. Click the buttons, or type `/pet <action>`.
 
 | Action | Button / command | Effect |
 |--------|------------------|--------|

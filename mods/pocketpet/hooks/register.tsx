@@ -4,11 +4,16 @@ import type { EngineInterface as Engine, Register } from 'claude-code'
 import type { Pet, Species, View } from '../types'
 import { SPECIES, act, advance, ageDays, callText, hatch, hearts, isAsleep, rename, statusText } from './game'
 import type { Action } from './game'
-import { sprite } from './sprites'
+import { colorOf, sprite } from './sprites'
+
+/** Dracula palette */
+const PURPLE = '#bd93f9'
+const ORANGE = '#ffb86c'
+const RED = '#ff5555'
 
 const view = atom(
   { plugin: 'pocketpet', key: 'view' } as const,
-  { pet: null, frame: 0, isOpen: false, isStats: false } as View,
+  { pet: null, frame: 0, isOpen: true, isStats: false, poke: null } as View,
 )
 
 const TICK = 1500
@@ -24,6 +29,10 @@ const ALIASES: Record<string, Action> = {
   light: 'light', lights: 'light', sleep: 'light',
   scold: 'scold', discipline: 'scold',
 }
+
+/** What the pet does when clicked, by click count; eggs, sleepers and sick pets react differently. */
+const REACTIONS = ['giggles', 'wiggles happily', 'wants more pets', 'does a little hop', 'is delighted', 'nuzzles you']
+const POKE_FRAMES = 3
 
 const HELP = [
   '/pet                show status',
@@ -144,10 +153,20 @@ export const register: Register = on => {
       )
     }
 
-    const art = sprite(p, v.frame, asleep && p.isLightsOff)
+    const poked = !!v.poke && v.frame - v.poke.at < POKE_FRAMES && !dead
+    const joy = poked && !asleep && p.stage !== 'egg' && !p.isSick
+    const pokeMsg = !poked || !v.poke ? null
+      : p.stage === 'egg' ? 'The egg wobbles.'
+      : asleep ? `${p.name} mumbles in its sleep... zzz`
+      : p.isSick ? `${p.name} whimpers.`
+      : `♥ ${p.name} ${REACTIONS[v.poke.n % REACTIONS.length]}!`
+    // a poked pet bounces side to side while it reacts
+    const shake = poked ? (v.frame - (v.poke?.at ?? 0)) % 2 === 0 ? ' ' : '' : ''
+    const art = sprite(p, poked ? v.frame + 1 : v.frame, asleep && p.isLightsOff, joy).map(l => shake + l)
+    const poke = () => void update($, view, cur => ({ ...cur, poke: { at: cur.frame, n: (cur.poke?.n ?? 0) + 1 } }))
     const dark = p.isLightsOff && !dead
     const call = callText(p)
-    const level = (n: number) => (n <= 1 ? 'error' : n === 2 ? 'warning' : 'claude')
+    const level = (n: number) => (n <= 1 ? RED : n === 2 ? ORANGE : PURPLE)
 
     const buttons = dead
       ? [<Button key="new" variant="primary" onPress={() => void $.command.run({ command: 'pet', args: 'new' })}>New egg</Button>]
@@ -157,6 +176,7 @@ export const register: Register = on => {
             <Button key="right" variant="primary" hotkey="r" onPress={run('right')}>Right</Button>,
           ]
         : [
+            <Button key="pet" hotkey="a" onPress={poke}>Pet</Button>,
             <Button key="feed" hotkey="f" onPress={run('feed')}>Meal</Button>,
             <Button key="snack" hotkey="s" onPress={run('snack')}>Snack</Button>,
             <Button key="play" hotkey="p" onPress={run('play')}>Play</Button>,
@@ -171,10 +191,10 @@ export const register: Register = on => {
       <Box flexDirection="column">
         {below}
       <Box paddingRight={1}>
-        <Box flexDirection="column" borderStyle="round" borderColor={dead ? 'subtle' : call ? 'warning' : 'claude'} paddingX={1}>
+        <Box flexDirection="column" borderStyle="round" borderColor={dead ? 'subtle' : call ? ORANGE : PURPLE} paddingX={1}>
           <Box justifyContent="space-between">
             <Text wrap="truncate-end">
-              <Text color="claude" bold>{p.name}</Text>
+              <Text color={PURPLE} bold>{p.name}</Text>
               <Text dimColor>{` · ${p.stage === 'egg' ? 'egg' : `${p.species} ${p.stage}`} · ${ageDays(p, now)}d`}</Text>
               {asleep && !dead && p.stage !== 'egg' ? <Text dimColor> · zzz</Text> : null}
             </Text>
@@ -182,21 +202,21 @@ export const register: Register = on => {
           </Box>
           <Box gap={2}>
             <Box flexDirection="column">
-              {art.map(line => <Text color={dark ? 'subtle' : 'claude'}>{line}</Text>)}
+              <Text color={dark || dead ? 'subtle' : colorOf(p)}>{art.join('\n')}</Text>
             </Box>
             <Box flexDirection="column">
               <Text>
                 <Text dimColor>hunger </Text><Text color={level(p.hunger)}>{hearts(p.hunger)}</Text>
                 <Text dimColor>   happy </Text><Text color={level(p.happy)}>{hearts(p.happy)}</Text>
-                {p.poop > 0 ? <Text color="warning">{`  poop ${'●'.repeat(p.poop)}`}</Text> : null}
-                {p.isSick ? <Text color="error" bold>  sick</Text> : null}
+                {p.poop > 0 ? <Text color={ORANGE}>{`  poop ${'●'.repeat(p.poop)}`}</Text> : null}
+                {p.isSick ? <Text color={RED} bold>  sick</Text> : null}
               </Text>
-              {call && !dead ? <Text color="warning" bold>{`! ${p.name} ${call}`}</Text> : null}
+              {call && !dead ? <Text color={ORANGE} bold>{`! ${p.name} ${call}`}</Text> : null}
               {v.isStats ? <Text dimColor>{`weight ${p.weight} · discipline ${p.discipline}% · mistakes ${p.mistakes}`}</Text> : null}
-              <Text dimColor wrap="truncate-end">{p.msg}</Text>
+              <Text dimColor wrap="truncate-end">{pokeMsg ?? p.msg}</Text>
             </Box>
           </Box>
-          <Box gap={1} flexWrap="wrap">{buttons}</Box>
+          <Box gap={1} flexWrap="wrap" marginTop={1}>{buttons}</Box>
         </Box>
       </Box>
       </Box>
