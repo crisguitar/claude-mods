@@ -37,7 +37,7 @@ describe('sprites', () => {
     }
     const mirror = (l: string) => [...l.trim()].reverse().map(flip).join('')
     for (const species of SPECIES) {
-      for (const stage of ['egg', 'baby', 'child', 'teen', 'adult', 'senior'] as const) {
+      for (const stage of ['egg', 'baby', 'child', 'teen', 'adult', 'senior', 'dead'] as const) {
         if (stage === 'egg') continue // the crack runs one way
         for (const line of sprite({ ...hatch(0, 'x', species), stage }, 0, false)) expect(mirror(line)).toBe(line.trim())
       }

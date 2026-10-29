@@ -202,6 +202,18 @@ const EGG_WOBBLE = [
   '.........######.........',
 ]
 
+/** A headstone with a cross cut into it, on a wider plinth. */
+const TOMB = [
+  '.........######.........',
+  '........########........',
+  '.......####..####.......',
+  '.......##......##.......',
+  '.......####..####.......',
+  '.......####..####.......',
+  '.......##########.......',
+  '.....##############.....',
+]
+
 type Eyes = 'open' | 'shut' | 'happy'
 type Mouth = 'smile' | 'frown' | 'none'
 
@@ -228,7 +240,7 @@ const render = (rows: string[], eyes: Eyes, mouth: Mouth): string[] => {
 
 /** Pixel-art lines for the pet's species, stage and mood; `frame` alternates for the idle animation. */
 export const sprite = (p: Pet, frame: number, asleep: boolean, joy = false): string[] => {
-  if (p.stage === 'dead') return [' .---. ', ' | RIP | ', ' |     | ', ' |_____| '].map(pad)
+  if (p.stage === 'dead') return render(TOMB, 'open', 'none').map(pad)
   if (p.stage === 'egg') return render(frame % 2 ? EGG_WOBBLE : EGG, 'shut', 'none').map(pad)
 
   const sad = p.hunger === 0 || p.happy === 0 || p.call !== null
