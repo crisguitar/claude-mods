@@ -1,1 +1,1 @@
-{ "name": "pocketpet", "version": "0.1.0", "description": "A tamagotchi-style virtual pet above the prompt: feed, play, clean, medicine, lights, discipline", "types": "./types/index.d.ts" }
+{ "name": "pocketpet", "version": "0.2.0", "description": "A tamagotchi-style virtual pet above the prompt: feed, play, clean, medicine, lights, discipline", "types": "./types/index.d.ts" }
